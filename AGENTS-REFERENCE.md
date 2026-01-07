@@ -6,7 +6,7 @@ This document contains the rules and guidelines for Claude agents.
 
 **When starting work in a new repository, run:**
 ```bash
-bd onboard
+bd onboard.md
 ```
 
 Follow the instructions provided. If the repository already has a `.beads/` directory and this document includes bd workflow information, onboarding is complete and you can skip this step.

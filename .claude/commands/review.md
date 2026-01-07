@@ -155,9 +155,6 @@ Show the aggregated report. Based on overall verdict:
 - `/review {file}` - Review only specific file
 
 ## Notes
-
-- This command is automatically run by `/finish`
 - Each dimension runs in parallel for speed
 - Skills contain the detailed checklists and knowledge
 - Blockers = must fix, Warnings = should fix, Suggestions = optional
-- Architecture review reads `docs/ARCHITECTURE.md` for project context
