@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { Subscription, SubscriptionTier, SubscriptionStatus } from '@prisma/client';
 
-export type { Subscription, SubscriptionTier, SubscriptionStatus } from '@prisma/client';
+export { Subscription, SubscriptionTier, SubscriptionStatus } from '@prisma/client';
 
 export type CreateSubscriptionInput = {
   userId: number;
@@ -142,12 +142,13 @@ class SubscriptionService {
       ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       : null;
 
+    const config = TIER_CONFIG[newTier];
     const updated = await prisma.subscription.update({
       where: { userId },
       data: {
         tier: newTier,
         currentPeriodEnd,
-        stripePriceId: TIER_CONFIG[newTier].stripePriceId,
+        stripePriceId: 'stripePriceId' in config ? config.stripePriceId : null,
       },
     });
 
