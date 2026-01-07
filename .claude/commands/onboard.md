@@ -52,12 +52,10 @@ Present git status briefly to user, then continue.
 
 **Sub-agent prompt:**
 ```
-Install/update dependencies using pnpm workspaces.
+Install/update dependencies
 
 STEPS:
-1. Run pnpm install from root (installs all workspaces):
-   - `pnpm install`
-   - Capture output
+1. If needed run the appropriate installs for this language
 
 2. Check for issues:
    - Any peer dependency warnings?
@@ -67,7 +65,7 @@ RETURN FORMAT:
 ## Dependencies
 - Status: UP TO DATE | INSTALLED | ERRORS
 - [If warnings:] Peer dependency warnings: {brief summary}
-- [If vulnerabilities:] Security: {X} vulnerabilities (run `pnpm audit` for details)
+- [If vulnerabilities:] Security: {X} vulnerabilities run any fixes
 ```
 
 If there are errors, report to user before continuing.
