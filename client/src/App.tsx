@@ -5,6 +5,7 @@ import { Reports } from './pages/Reports';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Profile } from './pages/Profile';
+import { Pricing } from './pages/Pricing';
 import { NotFound } from './pages/NotFound';
 import { RootPage } from './pages/RootPage';
 
@@ -15,6 +16,14 @@ function App(): JSX.Element {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<RootPage />} />
+        <Route
+          path="/pricing"
+          element={
+            <Layout>
+              <Pricing />
+            </Layout>
+          }
+        />
         <Route
           path="/reports"
           element={

@@ -16,6 +16,20 @@ enum Priority {
   URGENT
 }
 
+enum SubscriptionTier {
+  FREE
+  PRO
+  TEAM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
+  EXPIRED
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -23,7 +37,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  todos     Todo[]
+  todos        Todo[]
+  subscription Subscription?
+  paymentMethods PaymentMethod[]
 
   @@index([email])
 }
@@ -78,4 +94,80 @@ model TodoTag {
   @@id([todoId, tagId])
   @@index([todoId])
   @@index([tagId])
+}
+
+model Subscription {
+  id                    Int                @id @default(autoincrement())
+  userId                Int                @unique
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tier                  SubscriptionTier   @default(FREE)
+  status                SubscriptionStatus @default(ACTIVE)
+
+  // Stubbed Stripe fields (will be null in stub mode)
+  stripeCustomerId      String?            @unique
+  stripeSubscriptionId  String?            @unique
+  stripePriceId         String?
+
+  currentPeriodStart    DateTime           @default(now())
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean            @default(false)
+
+  trialEndsAt           DateTime?
+
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  billingHistory        BillingHistory[]
+
+  @@index([userId])
+  @@index([tier])
+  @@index([status])
+}
+
+model PaymentMethod {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Stubbed payment method details
+  type             String   // 'card', 'paypal', etc.
+  last4            String?  // Last 4 digits of card
+  brand            String?  // 'visa', 'mastercard', etc.
+  expiryMonth      Int?
+  expiryYear       Int?
+
+  isDefault        Boolean  @default(false)
+
+  // Stubbed Stripe field
+  stripePaymentMethodId String? @unique
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model BillingHistory {
+  id             Int          @id @default(autoincrement())
+  subscriptionId Int
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  amount         Float        // Amount in dollars
+  currency       String       @default("usd")
+
+  status         String       // 'succeeded', 'pending', 'failed'
+  description    String
+
+  // Stubbed Stripe fields
+  stripeInvoiceId String?     @unique
+  stripeChargeId  String?     @unique
+
+  billingDate    DateTime     @default(now())
+  paidAt         DateTime?
+
+  createdAt      DateTime     @default(now())
+
+  @@index([subscriptionId])
+  @@index([billingDate])
 }

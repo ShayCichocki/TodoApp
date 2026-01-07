@@ -79,3 +79,76 @@ export interface CreateTagInput {
   name: string;
   color?: string;
 }
+
+// Billing & Subscription Types
+
+export type SubscriptionTier = 'FREE' | 'PRO' | 'TEAM';
+export type SubscriptionStatus = 'ACTIVE' | 'CANCELLED' | 'PAST_DUE' | 'TRIALING' | 'EXPIRED';
+
+export interface BillingHistory {
+  id: number;
+  subscriptionId: number;
+  amount: number;
+  currency: string;
+  status: string;
+  description: string;
+  stripeInvoiceId?: string;
+  stripeChargeId?: string;
+  billingDate: string;
+  paidAt?: string;
+  createdAt: string;
+}
+
+export interface Subscription {
+  id: number;
+  userId: number;
+  tier: SubscriptionTier;
+  status: SubscriptionStatus;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  stripePriceId?: string;
+  currentPeriodStart: string;
+  currentPeriodEnd?: string;
+  cancelAtPeriodEnd: boolean;
+  trialEndsAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  billingHistory?: BillingHistory[];
+}
+
+export interface TierLimits {
+  maxTodos: number | null;
+  maxCollaborators: number | null;
+  maxTags: number | null;
+  hasRecurringTasks: boolean;
+  hasTimeTracking: boolean;
+  hasCalendarIntegration: boolean;
+  hasAdvancedNotifications: boolean;
+  hasTemplates: boolean;
+  hasAnalytics: boolean;
+  hasApiAccess: boolean;
+}
+
+export interface TierConfig {
+  name: string;
+  price: number;
+  billingPeriod: 'lifetime' | 'month';
+  stripePriceId?: string;
+  limits: TierLimits;
+}
+
+export interface TierConfigs {
+  FREE: TierConfig;
+  PRO: TierConfig;
+  TEAM: TierConfig;
+}
+
+export interface LimitCheckResult {
+  allowed: boolean;
+  limit: number | null;
+  remaining: number | null;
+}
+
+export interface UpgradeSubscriptionInput {
+  tier: SubscriptionTier;
+}

@@ -1,4 +1,5 @@
 import { userService, UserWithoutPassword } from './userService';
+import { subscriptionService } from './subscriptionService';
 
 export type RegisterInput = {
   email: string;
@@ -28,6 +29,10 @@ class AuthService {
 
     try {
       const user = await userService.create(input);
+
+      // Create FREE subscription for new user
+      await subscriptionService.create({ userId: user.id });
+
       return {
         success: true,
         user,

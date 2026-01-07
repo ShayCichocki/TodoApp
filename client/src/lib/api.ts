@@ -1,5 +1,21 @@
 import axios, { AxiosInstance } from 'axios';
-import { HelloResponse, Todo, CreateTodoInput, UpdateTodoInput, Tag, CreateTagInput, User, RegisterInput, LoginInput, AuthResponse } from '../types/api';
+import {
+  HelloResponse,
+  Todo,
+  CreateTodoInput,
+  UpdateTodoInput,
+  Tag,
+  CreateTagInput,
+  User,
+  RegisterInput,
+  LoginInput,
+  AuthResponse,
+  Subscription,
+  TierLimits,
+  TierConfigs,
+  UpgradeSubscriptionInput,
+  LimitCheckResult
+} from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
@@ -103,6 +119,43 @@ export const api = {
   getMe: async (): Promise<User> => {
     const response = await apiClient.get<AuthResponse>('/auth/me');
     return response.data.user;
+  },
+
+  // Billing & Subscription API methods
+
+  getSubscription: async (): Promise<Subscription> => {
+    const response = await apiClient.get<Subscription>('/billing/subscription');
+    return response.data;
+  },
+
+  getLimits: async (): Promise<TierLimits> => {
+    const response = await apiClient.get<TierLimits>('/billing/limits');
+    return response.data;
+  },
+
+  getTiers: async (): Promise<TierConfigs> => {
+    const response = await apiClient.get<TierConfigs>('/billing/tiers');
+    return response.data;
+  },
+
+  upgradeSubscription: async (input: UpgradeSubscriptionInput): Promise<{ message: string; subscription: Subscription }> => {
+    const response = await apiClient.post<{ message: string; subscription: Subscription }>('/billing/subscription/upgrade', input);
+    return response.data;
+  },
+
+  cancelSubscription: async (): Promise<{ message: string; subscription: Subscription }> => {
+    const response = await apiClient.post<{ message: string; subscription: Subscription }>('/billing/subscription/cancel');
+    return response.data;
+  },
+
+  reactivateSubscription: async (): Promise<{ message: string; subscription: Subscription }> => {
+    const response = await apiClient.post<{ message: string; subscription: Subscription }>('/billing/subscription/reactivate');
+    return response.data;
+  },
+
+  checkLimit: async (limitType: string, currentCount: number): Promise<LimitCheckResult> => {
+    const response = await apiClient.post<LimitCheckResult>('/billing/check-limit', { limitType, currentCount });
+    return response.data;
   },
 };
 

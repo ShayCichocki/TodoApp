@@ -5,11 +5,15 @@ import { validateBody } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
 import { CreateTodoSchema, UpdateTodoSchema, CreateTagSchema } from '../schemas/todoSchemas';
 import authRoutes from './auth';
+import billingRoutes from './billing';
 
 const router: Router = Router();
 
 // Mount auth routes (public)
 router.use('/api/auth', authRoutes);
+
+// Mount billing routes (protected)
+router.use('/api/billing', billingRoutes);
 
 // Public routes
 router.get('/api', (_req: Request, res: Response): void => {
