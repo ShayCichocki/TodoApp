@@ -3,6 +3,7 @@ import { todoService } from '../services/todoService';
 import { tagService } from '../services/tagService';
 import { validateBody } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
+import { checkLimit } from '../middleware/limitEnforcement';
 import { CreateTodoSchema, UpdateTodoSchema, CreateTagSchema } from '../schemas/todoSchemas';
 import authRoutes from './auth';
 import billingRoutes from './billing';
@@ -60,7 +61,7 @@ router.get('/api/todos/:id', requireAuth, async (req: Request<{ id: string }>, r
   }
 });
 
-router.post('/api/todos', requireAuth, validateBody(CreateTodoSchema), async (req: Request, res: Response): Promise<void> => {
+router.post('/api/todos', requireAuth, checkLimit('todos'), validateBody(CreateTodoSchema), async (req: Request, res: Response): Promise<void> => {
   try {
     const newTodo = await todoService.createForUser(req.body, req.user!.id);
     res.status(201).json(newTodo);
@@ -141,7 +142,7 @@ router.get('/api/tags', requireAuth, async (_req: Request, res: Response): Promi
   }
 });
 
-router.post('/api/tags', requireAuth, validateBody(CreateTagSchema), async (req: Request, res: Response): Promise<void> => {
+router.post('/api/tags', requireAuth, checkLimit('tags'), validateBody(CreateTagSchema), async (req: Request, res: Response): Promise<void> => {
   try {
     const newTag = await tagService.create(req.body);
     res.status(201).json(newTag);
