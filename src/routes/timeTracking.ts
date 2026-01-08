@@ -1,7 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { requireFeature } from '../middleware/limitEnforcement';
-import { timeTrackingService, PomodoroSessionType } from '../services/timeTrackingService';
+import {
+  timeTrackingService,
+  PomodoroSessionType,
+} from '../services/timeTrackingService';
 
 const router: Router = Router();
 
@@ -91,12 +94,15 @@ router.get(
     try {
       const { todoId, fromDate, toDate, limit } = req.query;
 
-      const entries = await timeTrackingService.getAllTimeEntries(req.user!.id, {
-        todoId: todoId ? parseInt(todoId as string, 10) : undefined,
-        fromDate: fromDate ? new Date(fromDate as string) : undefined,
-        toDate: toDate ? new Date(toDate as string) : undefined,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-      });
+      const entries = await timeTrackingService.getAllTimeEntries(
+        req.user!.id,
+        {
+          todoId: todoId ? parseInt(todoId as string, 10) : undefined,
+          fromDate: fromDate ? new Date(fromDate as string) : undefined,
+          toDate: toDate ? new Date(toDate as string) : undefined,
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+        }
+      );
 
       res.json(entries);
     } catch (error) {
@@ -148,7 +154,10 @@ router.delete(
     }
 
     try {
-      const deleted = await timeTrackingService.deleteTimeEntry(id, req.user!.id);
+      const deleted = await timeTrackingService.deleteTimeEntry(
+        id,
+        req.user!.id
+      );
 
       if (!deleted) {
         res.status(404).json({ error: 'Time entry not found' });
@@ -214,7 +223,10 @@ router.post(
     }
 
     try {
-      const session = await timeTrackingService.completePomodoro(id, req.user!.id);
+      const session = await timeTrackingService.completePomodoro(
+        id,
+        req.user!.id
+      );
       res.json(session);
     } catch (error) {
       console.error('Error completing Pomodoro:', error);
@@ -260,12 +272,15 @@ router.get(
     try {
       const { todoId, fromDate, toDate, limit } = req.query;
 
-      const sessions = await timeTrackingService.getAllPomodoroSessions(req.user!.id, {
-        todoId: todoId ? parseInt(todoId as string, 10) : undefined,
-        fromDate: fromDate ? new Date(fromDate as string) : undefined,
-        toDate: toDate ? new Date(toDate as string) : undefined,
-        limit: limit ? parseInt(limit as string, 10) : undefined,
-      });
+      const sessions = await timeTrackingService.getAllPomodoroSessions(
+        req.user!.id,
+        {
+          todoId: todoId ? parseInt(todoId as string, 10) : undefined,
+          fromDate: fromDate ? new Date(fromDate as string) : undefined,
+          toDate: toDate ? new Date(toDate as string) : undefined,
+          limit: limit ? parseInt(limit as string, 10) : undefined,
+        }
+      );
 
       res.json(sessions);
     } catch (error) {
@@ -317,7 +332,10 @@ router.delete(
     }
 
     try {
-      const deleted = await timeTrackingService.deletePomodoroSession(id, req.user!.id);
+      const deleted = await timeTrackingService.deletePomodoroSession(
+        id,
+        req.user!.id
+      );
 
       if (!deleted) {
         res.status(404).json({ error: 'Pomodoro session not found' });

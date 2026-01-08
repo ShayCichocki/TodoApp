@@ -1,8 +1,19 @@
 import { prisma } from '../lib/prisma';
-import { Template, TemplateVariable, TemplateCategory, TemplateVariableType, Priority } from '@prisma/client';
+import {
+  Template,
+  TemplateVariable,
+  TemplateCategory,
+  TemplateVariableType,
+  Priority,
+} from '@prisma/client';
 import { todoService } from './todoService';
 
-export { Template, TemplateVariable, TemplateCategory, TemplateVariableType } from '@prisma/client';
+export {
+  Template,
+  TemplateVariable,
+  TemplateCategory,
+  TemplateVariableType,
+} from '@prisma/client';
 
 export type CreateTemplateInput = {
   name: string;
@@ -82,7 +93,11 @@ class TemplateService {
         },
         category: true,
       },
-      orderBy: [{ isSystem: 'desc' }, { useCount: 'desc' }, { createdAt: 'desc' }],
+      orderBy: [
+        { isSystem: 'desc' },
+        { useCount: 'desc' },
+        { createdAt: 'desc' },
+      ],
     });
   }
 
@@ -104,7 +119,11 @@ class TemplateService {
   /**
    * Update a template (owner only)
    */
-  async update(id: number, userId: number, input: Partial<CreateTemplateInput>): Promise<Template> {
+  async update(
+    id: number,
+    userId: number,
+    input: Partial<CreateTemplateInput>
+  ): Promise<Template> {
     const { variables, ...updateData } = input;
 
     return prisma.template.update({
@@ -141,7 +160,8 @@ class TemplateService {
     let description = template.content;
 
     template.variables.forEach((variable) => {
-      const value = input.variables[variable.name] ?? variable.defaultValue ?? '';
+      const value =
+        input.variables[variable.name] ?? variable.defaultValue ?? '';
       const placeholder = new RegExp(`\\{\\{${variable.name}\\}\\}`, 'g');
 
       title = title.replace(placeholder, String(value));
@@ -153,7 +173,9 @@ class TemplateService {
       {
         title,
         description,
-        dueDate: input.dueDate ? new Date(input.dueDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        dueDate: input.dueDate
+          ? new Date(input.dueDate)
+          : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         isComplete: false,
         priority: template.priority,
       },
@@ -229,7 +251,8 @@ class TemplateService {
         name: 'Client Onboarding',
         description: 'Template for onboarding new clients',
         title: 'Onboard {{client_name}}',
-        content: `Welcome {{client_name}}!\n\n` +
+        content:
+          `Welcome {{client_name}}!\n\n` +
           `Kickoff meeting scheduled for {{meeting_date}}.\n\n` +
           `Deliverables:\n- Project brief\n- Timeline\n- Contract`,
         priority: Priority.HIGH,
@@ -238,8 +261,19 @@ class TemplateService {
         isPublic: true,
         variables: {
           create: [
-            { name: 'client_name', label: 'Client Name', type: TemplateVariableType.TEXT, required: true, order: 0 },
-            { name: 'meeting_date', label: 'Meeting Date', type: TemplateVariableType.DATE, order: 1 },
+            {
+              name: 'client_name',
+              label: 'Client Name',
+              type: TemplateVariableType.TEXT,
+              required: true,
+              order: 0,
+            },
+            {
+              name: 'meeting_date',
+              label: 'Meeting Date',
+              type: TemplateVariableType.DATE,
+              order: 1,
+            },
           ],
         },
       },
@@ -259,7 +293,12 @@ class TemplateService {
         isPublic: true,
         variables: {
           create: [
-            { name: 'week_number', label: 'Week Number', type: TemplateVariableType.NUMBER, order: 0 },
+            {
+              name: 'week_number',
+              label: 'Week Number',
+              type: TemplateVariableType.NUMBER,
+              order: 0,
+            },
           ],
         },
       },
@@ -272,7 +311,8 @@ class TemplateService {
         name: 'Bug Report',
         description: 'Template for reporting bugs',
         title: '[BUG] {{bug_title}}',
-        content: `**Severity:** {{severity}}\n\n` +
+        content:
+          `**Severity:** {{severity}}\n\n` +
           `**Description:**\n{{description}}\n\n` +
           `**Steps to Reproduce:**\n1. {{steps}}\n\n` +
           `**Expected Behavior:**\n{{expected}}\n\n` +
@@ -283,7 +323,13 @@ class TemplateService {
         isPublic: true,
         variables: {
           create: [
-            { name: 'bug_title', label: 'Bug Title', type: TemplateVariableType.TEXT, required: true, order: 0 },
+            {
+              name: 'bug_title',
+              label: 'Bug Title',
+              type: TemplateVariableType.TEXT,
+              required: true,
+              order: 0,
+            },
             {
               name: 'severity',
               label: 'Severity',
@@ -292,10 +338,31 @@ class TemplateService {
               defaultValue: 'Medium',
               order: 1,
             },
-            { name: 'description', label: 'Description', type: TemplateVariableType.TEXT, required: true, order: 2 },
-            { name: 'steps', label: 'Steps to Reproduce', type: TemplateVariableType.TEXT, order: 3 },
-            { name: 'expected', label: 'Expected Behavior', type: TemplateVariableType.TEXT, order: 4 },
-            { name: 'actual', label: 'Actual Behavior', type: TemplateVariableType.TEXT, order: 5 },
+            {
+              name: 'description',
+              label: 'Description',
+              type: TemplateVariableType.TEXT,
+              required: true,
+              order: 2,
+            },
+            {
+              name: 'steps',
+              label: 'Steps to Reproduce',
+              type: TemplateVariableType.TEXT,
+              order: 3,
+            },
+            {
+              name: 'expected',
+              label: 'Expected Behavior',
+              type: TemplateVariableType.TEXT,
+              order: 4,
+            },
+            {
+              name: 'actual',
+              label: 'Actual Behavior',
+              type: TemplateVariableType.TEXT,
+              order: 5,
+            },
           ],
         },
       },

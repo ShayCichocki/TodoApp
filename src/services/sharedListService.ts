@@ -208,7 +208,10 @@ class SharedListService {
   /**
    * Accept a collaboration invitation
    */
-  async acceptInvitation(collaboratorId: number, userId: number): Promise<Collaborator> {
+  async acceptInvitation(
+    collaboratorId: number,
+    userId: number
+  ): Promise<Collaborator> {
     return prisma.collaborator.update({
       where: {
         id: collaboratorId,
@@ -269,7 +272,10 @@ class SharedListService {
     }
 
     if (requiredRole === 'editor') {
-      return collaboration.role === CollaboratorRole.EDITOR || collaboration.role === CollaboratorRole.OWNER;
+      return (
+        collaboration.role === CollaboratorRole.EDITOR ||
+        collaboration.role === CollaboratorRole.OWNER
+      );
     }
 
     return false;
@@ -278,7 +284,10 @@ class SharedListService {
   /**
    * Get user's role in a list
    */
-  async getUserRole(listId: number, userId: number): Promise<CollaboratorRole | 'owner' | null> {
+  async getUserRole(
+    listId: number,
+    userId: number
+  ): Promise<CollaboratorRole | 'owner' | null> {
     const list = await prisma.sharedList.findUnique({
       where: { id: listId },
       include: {

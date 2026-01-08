@@ -54,7 +54,10 @@ class AuthService {
       };
     }
 
-    const isValidPassword = await userService.verifyPassword(user, input.password);
+    const isValidPassword = await userService.verifyPassword(
+      user,
+      input.password
+    );
     if (!isValidPassword) {
       return {
         success: false,

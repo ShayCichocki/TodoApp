@@ -13,7 +13,7 @@ export type UpdateTagInput = Partial<CreateTagInput>;
 class TagService {
   async getAll(): Promise<Tag[]> {
     return prisma.tag.findMany({
-      orderBy: { name: 'asc' }
+      orderBy: { name: 'asc' },
     });
   }
 
@@ -33,7 +33,7 @@ class TagService {
     try {
       return await prisma.tag.update({
         where: { id },
-        data: updates
+        data: updates,
       });
     } catch (error) {
       if ((error as { code?: string }).code === 'P2025') {

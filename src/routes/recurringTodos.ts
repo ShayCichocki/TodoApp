@@ -1,7 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { requireFeature } from '../middleware/limitEnforcement';
-import { recurringTodoService, RecurrenceFrequency, RecurrenceEndType } from '../services/recurringTodoService';
+import {
+  recurringTodoService,
+  RecurrenceFrequency,
+  RecurrenceEndType,
+} from '../services/recurringTodoService';
 import { Priority } from '@prisma/client';
 
 const router: Router = Router();
@@ -16,7 +20,9 @@ router.get(
   requireFeature('hasRecurringTasks'),
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const recurringTodos = await recurringTodoService.getAllForUser(req.user!.id);
+      const recurringTodos = await recurringTodoService.getAllForUser(
+        req.user!.id
+      );
       res.json(recurringTodos);
     } catch (error) {
       console.error('Error fetching recurring todos:', error);
@@ -42,7 +48,10 @@ router.get(
     }
 
     try {
-      const recurringTodo = await recurringTodoService.getById(id, req.user!.id);
+      const recurringTodo = await recurringTodoService.getById(
+        id,
+        req.user!.id
+      );
 
       if (!recurringTodo) {
         res.status(404).json({ error: 'Recurring todo not found' });
@@ -67,11 +76,25 @@ router.post(
   requireFeature('hasRecurringTasks'),
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { title, description, priority, frequency, interval, byWeekDay, byMonthDay, startDate, endType, endDate, count } = req.body;
+      const {
+        title,
+        description,
+        priority,
+        frequency,
+        interval,
+        byWeekDay,
+        byMonthDay,
+        startDate,
+        endType,
+        endDate,
+        count,
+      } = req.body;
 
       // Validation
       if (!title || !frequency || !startDate) {
-        res.status(400).json({ error: 'Missing required fields: title, frequency, startDate' });
+        res.status(400).json({
+          error: 'Missing required fields: title, frequency, startDate',
+        });
         return;
       }
 
@@ -102,8 +125,14 @@ router.post(
 
       // Generate initial instances (next 90 days)
       const now = new Date();
-      const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-      await recurringTodoService.generateInstances(recurringTodo.id, now, ninetyDaysFromNow);
+      const ninetyDaysFromNow = new Date(
+        now.getTime() + 90 * 24 * 60 * 60 * 1000
+      );
+      await recurringTodoService.generateInstances(
+        recurringTodo.id,
+        now,
+        ninetyDaysFromNow
+      );
 
       res.status(201).json(recurringTodo);
     } catch (error) {
@@ -205,7 +234,9 @@ router.post(
       const { fromDate, toDate } = req.body;
 
       if (!fromDate || !toDate) {
-        res.status(400).json({ error: 'Missing required fields: fromDate, toDate' });
+        res
+          .status(400)
+          .json({ error: 'Missing required fields: fromDate, toDate' });
         return;
       }
 
@@ -242,13 +273,19 @@ router.post(
     try {
       const { originalDate, action, newDate } = req.body;
 
-      if (!originalDate || !action || !['skip', 'reschedule'].includes(action)) {
+      if (
+        !originalDate ||
+        !action ||
+        !['skip', 'reschedule'].includes(action)
+      ) {
         res.status(400).json({ error: 'Invalid exception data' });
         return;
       }
 
       if (action === 'reschedule' && !newDate) {
-        res.status(400).json({ error: 'newDate is required for reschedule action' });
+        res
+          .status(400)
+          .json({ error: 'newDate is required for reschedule action' });
         return;
       }
 

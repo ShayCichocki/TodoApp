@@ -1,7 +1,15 @@
 import { prisma } from '../lib/prisma';
-import { Subscription, SubscriptionTier, SubscriptionStatus } from '@prisma/client';
+import {
+  Subscription,
+  SubscriptionTier,
+  SubscriptionStatus,
+} from '@prisma/client';
 
-export { Subscription, SubscriptionTier, SubscriptionStatus } from '@prisma/client';
+export {
+  Subscription,
+  SubscriptionTier,
+  SubscriptionStatus,
+} from '@prisma/client';
 
 export type CreateSubscriptionInput = {
   userId: number;
@@ -107,9 +115,10 @@ class SubscriptionService {
     const tier = input.tier ?? SubscriptionTier.FREE;
 
     // Calculate current period end (30 days for paid tiers)
-    const currentPeriodEnd = tier !== SubscriptionTier.FREE
-      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      : null;
+    const currentPeriodEnd =
+      tier !== SubscriptionTier.FREE
+        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        : null;
 
     return prisma.subscription.create({
       data: {
@@ -138,9 +147,10 @@ class SubscriptionService {
 
     // In stub mode, we just update the tier directly
     // In production, this would create/update Stripe subscription
-    const currentPeriodEnd = newTier !== SubscriptionTier.FREE
-      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      : null;
+    const currentPeriodEnd =
+      newTier !== SubscriptionTier.FREE
+        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        : null;
 
     const config = TIER_CONFIG[newTier];
     const updated = await prisma.subscription.update({
@@ -199,7 +209,10 @@ class SubscriptionService {
   /**
    * Check if user has access to a specific feature
    */
-  async hasFeatureAccess(userId: number, feature: keyof TierLimits): Promise<boolean> {
+  async hasFeatureAccess(
+    userId: number,
+    feature: keyof TierLimits
+  ): Promise<boolean> {
     const limits = await this.getUserLimits(userId);
     const value = limits[feature];
 
@@ -219,7 +232,11 @@ class SubscriptionService {
     userId: number,
     limitType: 'maxTodos' | 'maxCollaborators' | 'maxTags',
     currentCount: number
-  ): Promise<{ allowed: boolean; limit: number | null; remaining: number | null }> {
+  ): Promise<{
+    allowed: boolean;
+    limit: number | null;
+    remaining: number | null;
+  }> {
     const limits = await this.getUserLimits(userId);
     const limit = limits[limitType];
 

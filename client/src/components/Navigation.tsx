@@ -44,6 +44,18 @@ export const Navigation: React.FC = () => {
                 >
                   Reports
                 </NavLink>
+                <NavLink
+                  to="/calendar"
+                  className={({ isActive }) =>
+                    `rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-forest-700 text-white'
+                        : 'text-forest-100 hover:bg-forest-600 hover:text-white'
+                    }`
+                  }
+                >
+                  Calendar
+                </NavLink>
               </>
             )}
           </div>

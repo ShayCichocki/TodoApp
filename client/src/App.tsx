@@ -8,6 +8,7 @@ import { Profile } from './pages/Profile';
 import { Pricing } from './pages/Pricing';
 import { NotFound } from './pages/NotFound';
 import { RootPage } from './pages/RootPage';
+import CalendarIntegration from './pages/CalendarIntegration';
 
 function App(): JSX.Element {
   return (
@@ -40,6 +41,16 @@ function App(): JSX.Element {
             <Layout>
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            </Layout>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <Layout>
+              <ProtectedRoute>
+                <CalendarIntegration />
               </ProtectedRoute>
             </Layout>
           }

@@ -32,7 +32,11 @@ const LIMIT_CONFIGS: Record<LimitType, LimitCheckConfig> = {
  * Middleware factory to check if user can create more of a specific resource type
  */
 export function checkLimit(limitType: LimitType) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     if (!req.user) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
@@ -82,7 +86,10 @@ export function checkLimit(limitType: LimitType) {
 /**
  * Get current count of resources for a user
  */
-async function getCurrentCount(userId: number, limitType: LimitType): Promise<number> {
+async function getCurrentCount(
+  userId: number,
+  limitType: LimitType
+): Promise<number> {
   switch (limitType) {
     case 'todos':
       return prisma.todo.count({
@@ -121,15 +128,24 @@ async function getCurrentCount(userId: number, limitType: LimitType): Promise<nu
 /**
  * Middleware to check if user has access to a specific feature
  */
-export function requireFeature(feature: keyof import('../services/subscriptionService').TierLimits) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export function requireFeature(
+  feature: keyof import('../services/subscriptionService').TierLimits
+) {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     if (!req.user) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
 
     try {
-      const hasAccess = await subscriptionService.hasFeatureAccess(req.user.id, feature);
+      const hasAccess = await subscriptionService.hasFeatureAccess(
+        req.user.id,
+        feature
+      );
 
       if (!hasAccess) {
         res.status(403).json({

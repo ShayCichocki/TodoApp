@@ -92,6 +92,24 @@ enum DigestFrequency {
   NEVER
 }
 
+enum CalendarProvider {
+  GOOGLE
+  OUTLOOK
+  APPLE
+}
+
+enum SyncDirection {
+  TODO_TO_CALENDAR
+  CALENDAR_TO_TODO
+  BIDIRECTIONAL
+}
+
+enum SyncStatus {
+  ACTIVE
+  PAUSED
+  ERROR
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -110,6 +128,7 @@ model User {
   templates             Template[]
   notifications         Notification[]
   notificationSettings  NotificationSettings?
+  calendarConnections   CalendarConnection[]
 
   @@index([email])
 }
@@ -142,6 +161,7 @@ model Todo {
   tags             TodoTag[]
   timeEntries      TimeEntry[]
   pomodoroSessions PomodoroSession[]
+  calendarEvents   CalendarEvent[]
 
   @@index([dueDate])
   @@index([isComplete])
@@ -569,4 +589,75 @@ model NotificationRule {
 
   @@index([userId])
   @@index([isActive])
+}
+
+model CalendarConnection {
+  id          Int              @id @default(autoincrement())
+  userId      Int
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider    CalendarProvider
+
+  // OAuth credentials (encrypted in production)
+  accessToken     String
+  refreshToken    String?
+  tokenExpiresAt  DateTime?
+
+  // Provider-specific IDs
+  providerUserId      String?  // User ID from calendar provider
+  providerCalendarId  String?  // Default calendar ID to sync with
+
+  // Sync settings
+  syncDirection       SyncDirection  @default(BIDIRECTIONAL)
+  syncStatus          SyncStatus     @default(ACTIVE)
+  lastSyncAt          DateTime?
+  lastSyncError       String?
+
+  // Sync preferences
+  syncEnabled         Boolean        @default(true)
+  autoCreateEvents    Boolean        @default(true)
+  syncCompletedTodos  Boolean        @default(false)
+  eventDuration       Int            @default(60)  // Default event duration in minutes
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  events      CalendarEvent[]
+
+  @@unique([userId, provider])
+  @@index([userId])
+  @@index([syncStatus])
+}
+
+model CalendarEvent {
+  id          Int      @id @default(autoincrement())
+
+  connectionId Int
+  connection   CalendarConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  todoId      Int?
+  todo        Todo?    @relation(fields: [todoId], references: [id], onDelete: SetNull)
+
+  // Provider event ID for sync
+  providerEventId  String
+
+  // Event data
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  location    String?
+
+  // Sync metadata
+  lastSyncedAt     DateTime  @default(now())
+  syncedFromTodo   Boolean   @default(false)  // True if event was created from a todo
+  modifiedInCalendar Boolean @default(false)  // True if event was modified in calendar
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([connectionId, providerEventId])
+  @@index([connectionId])
+  @@index([todoId])
+  @@index([startTime])
 }

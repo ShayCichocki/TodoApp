@@ -10,6 +10,16 @@ interface Environment {
   clientDistPath: string;
   databaseUrl: string;
   sessionSecret: string;
+  googleCalendar: {
+    clientId: string;
+    clientSecret: string;
+    redirectUri: string;
+  };
+  outlookCalendar: {
+    clientId: string;
+    clientSecret: string;
+    redirectUri: string;
+  };
 }
 
 function validateEnvironment(): Environment {
@@ -42,6 +52,24 @@ function validateEnvironment(): Environment {
     throw new Error('SESSION_SECRET must be at least 32 characters long');
   }
 
+  // Google Calendar OAuth (optional - will use stub if not provided)
+  const googleClientId =
+    process.env['GOOGLE_CALENDAR_CLIENT_ID'] ?? 'STUB_CLIENT_ID';
+  const googleClientSecret =
+    process.env['GOOGLE_CALENDAR_CLIENT_SECRET'] ?? 'STUB_CLIENT_SECRET';
+  const googleRedirectUri =
+    process.env['GOOGLE_CALENDAR_REDIRECT_URI'] ??
+    'http://localhost:3000/api/calendar/oauth/callback';
+
+  // Outlook Calendar OAuth (optional - will use stub if not provided)
+  const outlookClientId =
+    process.env['OUTLOOK_CALENDAR_CLIENT_ID'] ?? 'STUB_CLIENT_ID';
+  const outlookClientSecret =
+    process.env['OUTLOOK_CALENDAR_CLIENT_SECRET'] ?? 'STUB_CLIENT_SECRET';
+  const outlookRedirectUri =
+    process.env['OUTLOOK_CALENDAR_REDIRECT_URI'] ??
+    'http://localhost:3000/api/calendar/oauth/callback';
+
   return {
     port: portNumber,
     nodeEnv,
@@ -49,6 +77,16 @@ function validateEnvironment(): Environment {
     clientDistPath,
     databaseUrl,
     sessionSecret,
+    googleCalendar: {
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
+      redirectUri: googleRedirectUri,
+    },
+    outlookCalendar: {
+      clientId: outlookClientId,
+      clientSecret: outlookClientSecret,
+      redirectUri: outlookRedirectUri,
+    },
   };
 }
 
