@@ -67,23 +67,27 @@ router.post('/logout', async (req: Request, res: Response): Promise<void> => {
   });
 });
 
-router.get('/me', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  try {
-    if (!req.user) {
-      res.status(401).json({ error: 'Not authenticated' });
-      return;
-    }
+router.get(
+  '/me',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Not authenticated' });
+        return;
+      }
 
-    const user = await userService.findById(req.user.id);
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
+      const user = await userService.findById(req.user.id);
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
 
-    res.json({ user });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+      res.json({ user });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-});
+);
 
 export default router;

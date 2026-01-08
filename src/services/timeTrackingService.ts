@@ -1,7 +1,15 @@
 import { prisma } from '../lib/prisma';
-import { TimeEntry, PomodoroSession, PomodoroSessionType } from '@prisma/client';
+import {
+  TimeEntry,
+  PomodoroSession,
+  PomodoroSessionType,
+} from '@prisma/client';
 
-export { TimeEntry, PomodoroSession, PomodoroSessionType } from '@prisma/client';
+export {
+  TimeEntry,
+  PomodoroSession,
+  PomodoroSessionType,
+} from '@prisma/client';
 
 export type StartTimerInput = {
   userId: number;
@@ -91,7 +99,9 @@ class TimeTrackingService {
     }
 
     const endTime = input.endTime || new Date();
-    const duration = Math.floor((endTime.getTime() - activeTimer.startTime.getTime()) / 1000);
+    const duration = Math.floor(
+      (endTime.getTime() - activeTimer.startTime.getTime()) / 1000
+    );
 
     return prisma.timeEntry.update({
       where: { id: activeTimer.id },
@@ -186,14 +196,24 @@ class TimeTrackingService {
       },
     });
 
-    const totalSeconds = entries.reduce((sum, entry) => sum + (entry.duration || 0), 0);
+    const totalSeconds = entries.reduce(
+      (sum, entry) => sum + (entry.duration || 0),
+      0
+    );
 
     // Group by todo
-    const byTodoMap = new Map<number, { title: string; seconds: number; count: number }>();
+    const byTodoMap = new Map<
+      number,
+      { title: string; seconds: number; count: number }
+    >();
 
     entries.forEach((entry) => {
       if (entry.todoId && entry.todo) {
-        const existing = byTodoMap.get(entry.todoId) || { title: entry.todo.title, seconds: 0, count: 0 };
+        const existing = byTodoMap.get(entry.todoId) || {
+          title: entry.todo.title,
+          seconds: 0,
+          count: 0,
+        };
         byTodoMap.set(entry.todoId, {
           title: entry.todo.title,
           seconds: existing.seconds + (entry.duration || 0),
@@ -202,13 +222,15 @@ class TimeTrackingService {
       }
     });
 
-    const byTodo = Array.from(byTodoMap.entries()).map(([todoId, data]) => ({
-      todoId,
-      todoTitle: data.title,
-      totalSeconds: data.seconds,
-      totalHours: Math.round((data.seconds / 3600) * 100) / 100,
-      entriesCount: data.count,
-    })).sort((a, b) => b.totalSeconds - a.totalSeconds);
+    const byTodo = Array.from(byTodoMap.entries())
+      .map(([todoId, data]) => ({
+        todoId,
+        todoTitle: data.title,
+        totalSeconds: data.seconds,
+        totalHours: Math.round((data.seconds / 3600) * 100) / 100,
+        entriesCount: data.count,
+      }))
+      .sort((a, b) => b.totalSeconds - a.totalSeconds);
 
     return {
       totalSeconds,
@@ -244,7 +266,9 @@ class TimeTrackingService {
 
     await Promise.all(
       activeTimers.map((timer) => {
-        const duration = Math.floor((now.getTime() - timer.startTime.getTime()) / 1000);
+        const duration = Math.floor(
+          (now.getTime() - timer.startTime.getTime()) / 1000
+        );
         return prisma.timeEntry.update({
           where: { id: timer.id },
           data: {
@@ -280,7 +304,10 @@ class TimeTrackingService {
   /**
    * Complete a Pomodoro session
    */
-  async completePomodoro(sessionId: number, userId: number): Promise<PomodoroSession> {
+  async completePomodoro(
+    sessionId: number,
+    userId: number
+  ): Promise<PomodoroSession> {
     return prisma.pomodoroSession.update({
       where: {
         id: sessionId,
@@ -296,7 +323,9 @@ class TimeTrackingService {
   /**
    * Get active Pomodoro session
    */
-  async getActivePomodoro(userId: number): Promise<PomodoroSessionWithTodo | null> {
+  async getActivePomodoro(
+    userId: number
+  ): Promise<PomodoroSessionWithTodo | null> {
     return prisma.pomodoroSession.findFirst({
       where: {
         userId,
@@ -374,7 +403,9 @@ class TimeTrackingService {
       },
     });
 
-    const workSessions = sessions.filter((s) => s.type === PomodoroSessionType.WORK);
+    const workSessions = sessions.filter(
+      (s) => s.type === PomodoroSessionType.WORK
+    );
     const totalMinutes = sessions.reduce((sum, s) => sum + s.duration, 0);
 
     return {

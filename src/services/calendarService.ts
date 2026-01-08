@@ -74,7 +74,9 @@ class CalendarService {
    * Create a new calendar connection
    * In production, this would be called after OAuth flow completes
    */
-  async createConnection(input: CreateConnectionInput): Promise<CalendarConnection> {
+  async createConnection(
+    input: CreateConnectionInput
+  ): Promise<CalendarConnection> {
     return prisma.calendarConnection.create({
       data: input,
     });
@@ -93,7 +95,10 @@ class CalendarService {
   /**
    * Get a specific connection
    */
-  async getConnection(id: number, userId: number): Promise<CalendarConnection | null> {
+  async getConnection(
+    id: number,
+    userId: number
+  ): Promise<CalendarConnection | null> {
     return prisma.calendarConnection.findFirst({
       where: { id, userId },
     });
@@ -127,7 +132,10 @@ class CalendarService {
    * Refresh OAuth token
    * Calls the provider's token refresh endpoint to get a new access token
    */
-  async refreshToken(connectionId: number, userId: number): Promise<CalendarConnection> {
+  async refreshToken(
+    connectionId: number,
+    userId: number
+  ): Promise<CalendarConnection> {
     const connection = await this.getConnection(connectionId, userId);
 
     if (!connection) {
@@ -172,7 +180,8 @@ class CalendarService {
       }
 
       case CalendarProvider.OUTLOOK: {
-        const tokenEndpoint = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
+        const tokenEndpoint =
+          'https://login.microsoftonline.com/common/oauth2/v2.0/token';
         const params = new URLSearchParams({
           client_id: env.outlookCalendar.clientId,
           client_secret: env.outlookCalendar.clientSecret,
@@ -193,7 +202,11 @@ class CalendarService {
           throw new Error(`Failed to refresh Outlook token: ${error}`);
         }
 
-        const tokens = await response.json();
+        const tokens = (await response.json()) as {
+          access_token: string;
+          refresh_token?: string;
+          expires_in: number;
+        };
 
         const tokenExpiresAt = new Date(Date.now() + tokens.expires_in * 1000);
 
@@ -243,7 +256,9 @@ class CalendarService {
           timeZone: 'UTC',
         },
         end: {
-          dateTime: new Date(todo.dueDate.getTime() + connection.eventDuration * 60 * 1000).toISOString(),
+          dateTime: new Date(
+            todo.dueDate.getTime() + connection.eventDuration * 60 * 1000
+          ).toISOString(),
           timeZone: 'UTC',
         },
       },
@@ -284,7 +299,9 @@ class CalendarService {
           timeZone: 'UTC',
         },
         end: {
-          dateTime: new Date(todo.dueDate.getTime() + connection.eventDuration * 60 * 1000).toISOString(),
+          dateTime: new Date(
+            todo.dueDate.getTime() + connection.eventDuration * 60 * 1000
+          ).toISOString(),
           timeZone: 'UTC',
         },
       },
@@ -315,7 +332,9 @@ class CalendarService {
         timeZone: 'UTC',
       },
       end: {
-        dateTime: new Date(todo.dueDate.getTime() + connection.eventDuration * 60 * 1000).toISOString(),
+        dateTime: new Date(
+          todo.dueDate.getTime() + connection.eventDuration * 60 * 1000
+        ).toISOString(),
         timeZone: 'UTC',
       },
     });
@@ -348,7 +367,9 @@ class CalendarService {
         timeZone: 'UTC',
       },
       end: {
-        dateTime: new Date(todo.dueDate.getTime() + connection.eventDuration * 60 * 1000).toISOString(),
+        dateTime: new Date(
+          todo.dueDate.getTime() + connection.eventDuration * 60 * 1000
+        ).toISOString(),
         timeZone: 'UTC',
       },
     });
@@ -358,7 +379,10 @@ class CalendarService {
    * Sync todos to calendar
    * Creates or updates calendar events from todos
    */
-  async syncTodosToCalendar(connectionId: number, userId: number): Promise<SyncResult> {
+  async syncTodosToCalendar(
+    connectionId: number,
+    userId: number
+  ): Promise<SyncResult> {
     const result: SyncResult = {
       todosToCalendar: 0,
       calendarToTodos: 0,
@@ -401,9 +425,17 @@ class CalendarService {
           if (existingEvent) {
             // Update existing event in provider's calendar
             if (connection.provider === CalendarProvider.GOOGLE) {
-              await this.updateGoogleCalendarEvent(connection, existingEvent.providerEventId, todo);
+              await this.updateGoogleCalendarEvent(
+                connection,
+                existingEvent.providerEventId,
+                todo
+              );
             } else if (connection.provider === CalendarProvider.OUTLOOK) {
-              await this.updateOutlookCalendarEvent(connection, existingEvent.providerEventId, todo);
+              await this.updateOutlookCalendarEvent(
+                connection,
+                existingEvent.providerEventId,
+                todo
+              );
             }
 
             // Update local record
@@ -411,7 +443,9 @@ class CalendarService {
               title: todo.title,
               description: todo.description,
               startTime: todo.dueDate,
-              endTime: new Date(todo.dueDate.getTime() + connection.eventDuration * 60 * 1000),
+              endTime: new Date(
+                todo.dueDate.getTime() + connection.eventDuration * 60 * 1000
+              ),
             });
 
             result.todosToCalendar++;
@@ -420,9 +454,15 @@ class CalendarService {
             let providerEventId: string;
 
             if (connection.provider === CalendarProvider.GOOGLE) {
-              providerEventId = await this.createGoogleCalendarEvent(connection, todo);
+              providerEventId = await this.createGoogleCalendarEvent(
+                connection,
+                todo
+              );
             } else if (connection.provider === CalendarProvider.OUTLOOK) {
-              providerEventId = await this.createOutlookCalendarEvent(connection, todo);
+              providerEventId = await this.createOutlookCalendarEvent(
+                connection,
+                todo
+              );
             } else {
               throw new Error(`Unsupported provider: ${connection.provider}`);
             }
@@ -435,7 +475,9 @@ class CalendarService {
               title: todo.title,
               description: todo.description,
               startTime: todo.dueDate,
-              endTime: new Date(todo.dueDate.getTime() + connection.eventDuration * 60 * 1000),
+              endTime: new Date(
+                todo.dueDate.getTime() + connection.eventDuration * 60 * 1000
+              ),
               syncedFromTodo: true,
             });
 
@@ -443,7 +485,9 @@ class CalendarService {
           }
         } catch (error) {
           console.error(`Error syncing todo ${todo.id}:`, error);
-          result.errors.push(`Failed to sync todo "${todo.title}": ${(error as Error).message}`);
+          result.errors.push(
+            `Failed to sync todo "${todo.title}": ${(error as Error).message}`
+          );
         }
       }
 
@@ -475,7 +519,10 @@ class CalendarService {
   /**
    * Helper: Fetch events from Google Calendar
    */
-  private async fetchGoogleCalendarEvents(connection: CalendarConnection, since?: Date): Promise<any[]> {
+  private async fetchGoogleCalendarEvents(
+    connection: CalendarConnection,
+    since?: Date
+  ): Promise<any[]> {
     const oauth2Client = new google.auth.OAuth2(
       env.googleCalendar.clientId,
       env.googleCalendar.clientSecret,
@@ -491,7 +538,9 @@ class CalendarService {
 
     const response = await calendar.events.list({
       calendarId: connection.providerCalendarId ?? 'primary',
-      timeMin: since?.toISOString() ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      timeMin:
+        since?.toISOString() ??
+        new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
       maxResults: 100,
       singleEvents: true,
       orderBy: 'startTime',
@@ -503,7 +552,10 @@ class CalendarService {
   /**
    * Helper: Fetch events from Outlook Calendar
    */
-  private async fetchOutlookCalendarEvents(connection: CalendarConnection, since?: Date): Promise<any[]> {
+  private async fetchOutlookCalendarEvents(
+    connection: CalendarConnection,
+    since?: Date
+  ): Promise<any[]> {
     const client = Client.init({
       authProvider: (done) => {
         done(null, connection.accessToken);
@@ -525,7 +577,10 @@ class CalendarService {
    * Sync calendar events to todos
    * Creates or updates todos from calendar events
    */
-  async syncCalendarToTodos(connectionId: number, userId: number): Promise<SyncResult> {
+  async syncCalendarToTodos(
+    connectionId: number,
+    userId: number
+  ): Promise<SyncResult> {
     const result: SyncResult = {
       todosToCalendar: 0,
       calendarToTodos: 0,
@@ -545,9 +600,15 @@ class CalendarService {
       let providerEvents: any[];
 
       if (connection.provider === CalendarProvider.GOOGLE) {
-        providerEvents = await this.fetchGoogleCalendarEvents(connection, connection.lastSyncAt ?? undefined);
+        providerEvents = await this.fetchGoogleCalendarEvents(
+          connection,
+          connection.lastSyncAt ?? undefined
+        );
       } else if (connection.provider === CalendarProvider.OUTLOOK) {
-        providerEvents = await this.fetchOutlookCalendarEvents(connection, connection.lastSyncAt ?? undefined);
+        providerEvents = await this.fetchOutlookCalendarEvents(
+          connection,
+          connection.lastSyncAt ?? undefined
+        );
       } else {
         result.errors.push(`Unsupported provider: ${connection.provider}`);
         return result;
@@ -556,17 +617,28 @@ class CalendarService {
       for (const providerEvent of providerEvents) {
         try {
           // Parse event data based on provider
-          const eventId = connection.provider === CalendarProvider.GOOGLE ? providerEvent.id : providerEvent.id;
-          const title = connection.provider === CalendarProvider.GOOGLE ? providerEvent.summary : providerEvent.subject;
-          const description = connection.provider === CalendarProvider.GOOGLE
-            ? providerEvent.description ?? ''
-            : providerEvent.body?.content ?? '';
-          const startTime = connection.provider === CalendarProvider.GOOGLE
-            ? new Date(providerEvent.start.dateTime || providerEvent.start.date)
-            : new Date(providerEvent.start.dateTime);
-          const endTime = connection.provider === CalendarProvider.GOOGLE
-            ? new Date(providerEvent.end.dateTime || providerEvent.end.date)
-            : new Date(providerEvent.end.dateTime);
+          const eventId =
+            connection.provider === CalendarProvider.GOOGLE
+              ? providerEvent.id
+              : providerEvent.id;
+          const title =
+            connection.provider === CalendarProvider.GOOGLE
+              ? providerEvent.summary
+              : providerEvent.subject;
+          const description =
+            connection.provider === CalendarProvider.GOOGLE
+              ? (providerEvent.description ?? '')
+              : (providerEvent.body?.content ?? '');
+          const startTime =
+            connection.provider === CalendarProvider.GOOGLE
+              ? new Date(
+                  providerEvent.start.dateTime || providerEvent.start.date
+                )
+              : new Date(providerEvent.start.dateTime);
+          const endTime =
+            connection.provider === CalendarProvider.GOOGLE
+              ? new Date(providerEvent.end.dateTime || providerEvent.end.date)
+              : new Date(providerEvent.end.dateTime);
 
           // Check if we already have this event tracked
           const existingEvent = await prisma.calendarEvent.findFirst({
@@ -581,9 +653,10 @@ class CalendarService {
 
           if (existingEvent?.todo) {
             // Event exists and has a linked todo - check if it was modified in calendar
-            const eventUpdated = connection.provider === CalendarProvider.GOOGLE
-              ? new Date(providerEvent.updated)
-              : new Date(providerEvent.lastModifiedDateTime);
+            const eventUpdated =
+              connection.provider === CalendarProvider.GOOGLE
+                ? new Date(providerEvent.updated)
+                : new Date(providerEvent.lastModifiedDateTime);
 
             if (eventUpdated > existingEvent.lastSyncedAt) {
               // Event was modified in calendar after last sync
@@ -610,7 +683,7 @@ class CalendarService {
 
               result.calendarToTodos++;
             }
-          } else if (!existingEvent && !existingEvent?.syncedFromTodo) {
+          } else if (!existingEvent) {
             // New event in calendar not created by us - optionally create a todo
             // For now, just track the event but don't auto-create todos
             // This prevents cluttering the todo list with all calendar events
@@ -628,7 +701,9 @@ class CalendarService {
           }
         } catch (error) {
           console.error(`Error syncing event:`, error);
-          result.errors.push(`Failed to sync event: ${(error as Error).message}`);
+          result.errors.push(
+            `Failed to sync event: ${(error as Error).message}`
+          );
         }
       }
     } catch (error) {
@@ -641,9 +716,18 @@ class CalendarService {
   /**
    * Perform bidirectional sync
    */
-  async performBidirectionalSync(connectionId: number, userId: number): Promise<SyncResult> {
-    const todosToCalResult = await this.syncTodosToCalendar(connectionId, userId);
-    const calToTodosResult = await this.syncCalendarToTodos(connectionId, userId);
+  async performBidirectionalSync(
+    connectionId: number,
+    userId: number
+  ): Promise<SyncResult> {
+    const todosToCalResult = await this.syncTodosToCalendar(
+      connectionId,
+      userId
+    );
+    const calToTodosResult = await this.syncCalendarToTodos(
+      connectionId,
+      userId
+    );
 
     return {
       todosToCalendar: todosToCalResult.todosToCalendar,
@@ -787,7 +871,9 @@ class CalendarService {
    * Generates the actual OAuth URL for the provider
    */
   getOAuthUrl(provider: CalendarProvider, userId: number): string {
-    const state = Buffer.from(JSON.stringify({ userId, provider })).toString('base64');
+    const state = Buffer.from(JSON.stringify({ userId, provider })).toString(
+      'base64'
+    );
 
     switch (provider) {
       case CalendarProvider.GOOGLE: {
@@ -810,10 +896,15 @@ class CalendarService {
 
       case CalendarProvider.OUTLOOK: {
         const scopes = ['Calendars.ReadWrite', 'offline_access'];
-        const authUrl = new URL('https://login.microsoftonline.com/common/oauth2/v2.0/authorize');
+        const authUrl = new URL(
+          'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
+        );
         authUrl.searchParams.set('client_id', env.outlookCalendar.clientId);
         authUrl.searchParams.set('response_type', 'code');
-        authUrl.searchParams.set('redirect_uri', env.outlookCalendar.redirectUri);
+        authUrl.searchParams.set(
+          'redirect_uri',
+          env.outlookCalendar.redirectUri
+        );
         authUrl.searchParams.set('response_mode', 'query');
         authUrl.searchParams.set('scope', scopes.join(' '));
         authUrl.searchParams.set('state', state);
@@ -862,20 +953,23 @@ class CalendarService {
         oauth2Client.setCredentials(tokens);
         const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
         const calendarList = await calendar.calendarList.list();
-        const primaryCalendar = calendarList.data.items?.find((cal) => cal.primary);
+        const primaryCalendar = calendarList.data.items?.find(
+          (cal) => cal.primary
+        );
 
         return this.createConnection({
           userId,
           provider,
           accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
+          refreshToken: tokens.refresh_token ?? undefined,
           tokenExpiresAt,
           providerCalendarId: primaryCalendar?.id ?? 'primary',
         });
       }
 
       case CalendarProvider.OUTLOOK: {
-        const tokenEndpoint = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
+        const tokenEndpoint =
+          'https://login.microsoftonline.com/common/oauth2/v2.0/token';
         const params = new URLSearchParams({
           client_id: env.outlookCalendar.clientId,
           client_secret: env.outlookCalendar.clientSecret,
@@ -897,7 +991,11 @@ class CalendarService {
           throw new Error(`Failed to exchange code for tokens: ${error}`);
         }
 
-        const tokens = await response.json();
+        const tokens = (await response.json()) as {
+          access_token: string;
+          refresh_token: string;
+          expires_in: number;
+        };
 
         const tokenExpiresAt = new Date(Date.now() + tokens.expires_in * 1000);
 

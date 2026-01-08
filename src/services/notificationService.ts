@@ -68,8 +68,18 @@ export type NotificationWithDetails = Notification & {
 };
 
 export type DigestData = {
-  overdueTodos: Array<{ id: number; title: string; dueDate: Date; priority: Priority }>;
-  dueSoonTodos: Array<{ id: number; title: string; dueDate: Date; priority: Priority }>;
+  overdueTodos: Array<{
+    id: number;
+    title: string;
+    dueDate: Date;
+    priority: Priority;
+  }>;
+  dueSoonTodos: Array<{
+    id: number;
+    title: string;
+    dueDate: Date;
+    priority: Priority;
+  }>;
   completedTodos: Array<{ id: number; title: string; completedAt: Date }>;
   totalActive: number;
 };
@@ -84,12 +94,16 @@ class NotificationService {
 
     // Check if notification type is enabled
     if (!this.isNotificationTypeEnabled(settings, input.type)) {
-      throw new Error(`Notification type ${input.type} is disabled for this user`);
+      throw new Error(
+        `Notification type ${input.type} is disabled for this user`
+      );
     }
 
     // Check if channel is enabled
     if (!this.isChannelEnabled(settings, input.channel)) {
-      throw new Error(`Notification channel ${input.channel} is disabled for this user`);
+      throw new Error(
+        `Notification channel ${input.channel} is disabled for this user`
+      );
     }
 
     // Check quiet hours
@@ -184,7 +198,11 @@ class NotificationService {
   /**
    * Snooze a notification
    */
-  async snooze(id: number, userId: number, snoozedUntil: Date): Promise<Notification> {
+  async snooze(
+    id: number,
+    userId: number,
+    snoozedUntil: Date
+  ): Promise<Notification> {
     return prisma.notification.update({
       where: { id, userId },
       data: { snoozedUntil },
@@ -260,7 +278,9 @@ class NotificationService {
 
     for (const setting of settings) {
       const now = new Date();
-      const dueWindow = new Date(now.getTime() + setting.taskDueSoonHours * 60 * 60 * 1000);
+      const dueWindow = new Date(
+        now.getTime() + setting.taskDueSoonHours * 60 * 60 * 1000
+      );
 
       // Find todos due within the window
       const todos = await prisma.todo.findMany({
@@ -430,7 +450,9 @@ class NotificationService {
   /**
    * Create notification rule
    */
-  async createRule(input: CreateNotificationRuleInput): Promise<NotificationRule> {
+  async createRule(
+    input: CreateNotificationRuleInput
+  ): Promise<NotificationRule> {
     return prisma.notificationRule.create({
       data: {
         userId: input.userId,
@@ -486,7 +508,10 @@ class NotificationService {
 
   // ===== HELPER METHODS =====
 
-  private isNotificationTypeEnabled(settings: NotificationSettings, type: NotificationType): boolean {
+  private isNotificationTypeEnabled(
+    settings: NotificationSettings,
+    type: NotificationType
+  ): boolean {
     switch (type) {
       case NotificationType.TASK_DUE_SOON:
         return settings.taskDueSoonEnabled;
@@ -501,7 +526,10 @@ class NotificationService {
     }
   }
 
-  private isChannelEnabled(settings: NotificationSettings, channel: NotificationChannel): boolean {
+  private isChannelEnabled(
+    settings: NotificationSettings,
+    channel: NotificationChannel
+  ): boolean {
     switch (channel) {
       case NotificationChannel.EMAIL:
         return settings.emailEnabled;
@@ -515,14 +543,21 @@ class NotificationService {
   }
 
   private isInQuietHours(settings: NotificationSettings): boolean {
-    if (!settings.quietHoursEnabled || !settings.quietHoursStart || !settings.quietHoursEnd) {
+    if (
+      !settings.quietHoursEnabled ||
+      !settings.quietHoursStart ||
+      !settings.quietHoursEnd
+    ) {
       return false;
     }
 
     const now = new Date();
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
-    return currentTime >= settings.quietHoursStart && currentTime <= settings.quietHoursEnd;
+    return (
+      currentTime >= settings.quietHoursStart &&
+      currentTime <= settings.quietHoursEnd
+    );
   }
 
   private calculateNextAvailableTime(settings: NotificationSettings): Date {

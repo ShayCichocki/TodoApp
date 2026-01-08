@@ -26,25 +26,31 @@ class TodoService {
       where: { deletedAt: null, userId },
       include: {
         tags: {
-          include: { tag: true }
-        }
+          include: { tag: true },
+        },
       },
-      orderBy: { dueDate: 'asc' }
+      orderBy: { dueDate: 'asc' },
     });
   }
 
-  async getByIdForUser(id: number, userId: number): Promise<TodoWithTags | null> {
+  async getByIdForUser(
+    id: number,
+    userId: number
+  ): Promise<TodoWithTags | null> {
     return prisma.todo.findFirst({
       where: { id, deletedAt: null, userId },
       include: {
         tags: {
-          include: { tag: true }
-        }
-      }
+          include: { tag: true },
+        },
+      },
     });
   }
 
-  async createForUser(input: CreateTodoInput, userId: number): Promise<TodoWithTags> {
+  async createForUser(
+    input: CreateTodoInput,
+    userId: number
+  ): Promise<TodoWithTags> {
     const { tagIds, ...todoData } = input;
 
     return prisma.todo.create({
@@ -65,7 +71,11 @@ class TodoService {
     });
   }
 
-  async updateForUser(id: number, updates: UpdateTodoInput, userId: number): Promise<TodoWithTags | null> {
+  async updateForUser(
+    id: number,
+    updates: UpdateTodoInput,
+    userId: number
+  ): Promise<TodoWithTags | null> {
     try {
       const { tagIds, ...todoUpdates } = updates;
 
@@ -76,16 +86,19 @@ class TodoService {
         where: { id },
         data: {
           ...todoUpdates,
-          tags: tagIds !== undefined ? {
-            deleteMany: {},
-            create: tagIds.map(tagId => ({ tagId }))
-          } : undefined
+          tags:
+            tagIds !== undefined
+              ? {
+                  deleteMany: {},
+                  create: tagIds.map((tagId) => ({ tagId })),
+                }
+              : undefined,
         },
         include: {
           tags: {
-            include: { tag: true }
-          }
-        }
+            include: { tag: true },
+          },
+        },
       });
     } catch (error) {
       if ((error as { code?: string }).code === 'P2025') {
@@ -102,7 +115,7 @@ class TodoService {
 
       await prisma.todo.update({
         where: { id },
-        data: { deletedAt: new Date() }
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -118,17 +131,20 @@ class TodoService {
       where: { deletedAt: { not: null }, userId },
       include: {
         tags: {
-          include: { tag: true }
-        }
+          include: { tag: true },
+        },
       },
-      orderBy: { deletedAt: 'desc' }
+      orderBy: { deletedAt: 'desc' },
     });
   }
 
-  async restoreForUser(id: number, userId: number): Promise<TodoWithTags | null> {
+  async restoreForUser(
+    id: number,
+    userId: number
+  ): Promise<TodoWithTags | null> {
     try {
       const existing = await prisma.todo.findFirst({
-        where: { id, userId }
+        where: { id, userId },
       });
 
       if (!existing) return null;
@@ -138,9 +154,9 @@ class TodoService {
         data: { deletedAt: null },
         include: {
           tags: {
-            include: { tag: true }
-          }
-        }
+            include: { tag: true },
+          },
+        },
       });
     } catch (error) {
       if ((error as { code?: string }).code === 'P2025') {

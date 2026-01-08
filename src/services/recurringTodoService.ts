@@ -1,8 +1,18 @@
 import { prisma } from '../lib/prisma';
-import { RecurringTodo, RecurrenceException, RecurrenceFrequency, RecurrenceEndType, Priority } from '@prisma/client';
+import {
+  RecurringTodo,
+  RecurrenceException,
+  RecurrenceFrequency,
+  RecurrenceEndType,
+  Priority,
+} from '@prisma/client';
 import { RRule, Frequency } from 'rrule';
 
-export { RecurringTodo, RecurrenceFrequency, RecurrenceEndType } from '@prisma/client';
+export {
+  RecurringTodo,
+  RecurrenceFrequency,
+  RecurrenceEndType,
+} from '@prisma/client';
 
 export type CreateRecurringTodoInput = {
   userId: number;
@@ -36,13 +46,13 @@ const FREQUENCY_MAP: Record<RecurrenceFrequency, Frequency> = {
 
 // Map day strings to rrule weekday constants
 const WEEKDAY_MAP: Record<string, any> = {
-  'MO': RRule.MO,
-  'TU': RRule.TU,
-  'WE': RRule.WE,
-  'TH': RRule.TH,
-  'FR': RRule.FR,
-  'SA': RRule.SA,
-  'SU': RRule.SU,
+  MO: RRule.MO,
+  TU: RRule.TU,
+  WE: RRule.WE,
+  TH: RRule.TH,
+  FR: RRule.FR,
+  SA: RRule.SA,
+  SU: RRule.SU,
 };
 
 class RecurringTodoService {
@@ -103,7 +113,11 @@ class RecurringTodoService {
   /**
    * Update a recurring todo
    */
-  async update(id: number, userId: number, input: UpdateRecurringTodoInput): Promise<RecurringTodo> {
+  async update(
+    id: number,
+    userId: number,
+    input: UpdateRecurringTodoInput
+  ): Promise<RecurringTodo> {
     return prisma.recurringTodo.update({
       where: { id, userId },
       data: input,
@@ -177,9 +191,10 @@ class RecurringTodoService {
       }
 
       // Determine due date (respect reschedule exceptions)
-      const dueDate = exception?.action === 'reschedule' && exception.newDate
-        ? exception.newDate
-        : date;
+      const dueDate =
+        exception?.action === 'reschedule' && exception.newDate
+          ? exception.newDate
+          : date;
 
       // Create the instance
       await prisma.todo.create({
@@ -217,20 +232,32 @@ class RecurringTodoService {
     };
 
     // Handle weekly recurrence with specific weekdays
-    if (recurringTodo.frequency === RecurrenceFrequency.WEEKLY && recurringTodo.byWeekDay) {
+    if (
+      recurringTodo.frequency === RecurrenceFrequency.WEEKLY &&
+      recurringTodo.byWeekDay
+    ) {
       const weekdays = JSON.parse(recurringTodo.byWeekDay) as string[];
       options.byweekday = weekdays.map((day) => WEEKDAY_MAP[day]);
     }
 
     // Handle monthly recurrence with specific day
-    if (recurringTodo.frequency === RecurrenceFrequency.MONTHLY && recurringTodo.byMonthDay) {
+    if (
+      recurringTodo.frequency === RecurrenceFrequency.MONTHLY &&
+      recurringTodo.byMonthDay
+    ) {
       options.bymonthday = recurringTodo.byMonthDay;
     }
 
     // Handle recurrence end conditions
-    if (recurringTodo.endType === RecurrenceEndType.ON_DATE && recurringTodo.endDate) {
+    if (
+      recurringTodo.endType === RecurrenceEndType.ON_DATE &&
+      recurringTodo.endDate
+    ) {
       options.until = recurringTodo.endDate;
-    } else if (recurringTodo.endType === RecurrenceEndType.AFTER_COUNT && recurringTodo.count) {
+    } else if (
+      recurringTodo.endType === RecurrenceEndType.AFTER_COUNT &&
+      recurringTodo.count
+    ) {
       options.count = recurringTodo.count;
     }
 
@@ -258,7 +285,9 @@ class RecurringTodoService {
 
     // Generate instances for each recurring todo
     await Promise.all(
-      recurringTodos.map((rt) => this.generateInstances(rt.id, fromDate, toDate))
+      recurringTodos.map((rt) =>
+        this.generateInstances(rt.id, fromDate, toDate)
+      )
     );
   }
 
