@@ -9,6 +9,7 @@ import authRoutes from './auth';
 import billingRoutes from './billing';
 import recurringTodosRoutes from './recurringTodos';
 import sharedListsRoutes from './sharedLists';
+import timeTrackingRoutes from './timeTracking';
 
 const router: Router = Router();
 
@@ -23,6 +24,9 @@ router.use('/api/recurring-todos', recurringTodosRoutes);
 
 // Mount shared lists routes (protected)
 router.use('/api/shared-lists', sharedListsRoutes);
+
+// Mount time tracking routes (protected + feature gated)
+router.use('/api/time-tracking', timeTrackingRoutes);
 
 // Public routes
 router.get('/api', (_req: Request, res: Response): void => {

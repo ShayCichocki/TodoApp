@@ -49,6 +49,12 @@ enum CollaboratorRole {
   VIEWER
 }
 
+enum PomodoroSessionType {
+  WORK
+  SHORT_BREAK
+  LONG_BREAK
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -56,12 +62,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  todos          Todo[]
-  recurringTodos RecurringTodo[]
-  subscription   Subscription?
-  paymentMethods PaymentMethod[]
-  ownedLists     SharedList[]
-  collaborations Collaborator[]
+  todos           Todo[]
+  recurringTodos  RecurringTodo[]
+  subscription    Subscription?
+  paymentMethods  PaymentMethod[]
+  ownedLists      SharedList[]
+  collaborations  Collaborator[]
+  timeEntries     TimeEntry[]
+  pomodoroSessions PomodoroSession[]
 
   @@index([email])
 }
@@ -91,7 +99,9 @@ model Todo {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  tags        TodoTag[]
+  tags             TodoTag[]
+  timeEntries      TimeEntry[]
+  pomodoroSessions PomodoroSession[]
 
   @@index([dueDate])
   @@index([isComplete])
@@ -296,4 +306,51 @@ model Collaborator {
   @@unique([listId, userId])
   @@index([listId])
   @@index([userId])
+}
+
+model TimeEntry {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  todoId      Int?
+  todo        Todo?    @relation(fields: [todoId], references: [id], onDelete: SetNull)
+
+  startTime   DateTime
+  endTime     DateTime?
+  duration    Int?     // Duration in seconds (calculated when ended)
+
+  isActive    Boolean  @default(true)  // Only one can be active per user at a time
+  description String?  // Optional note about what was done
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([todoId])
+  @@index([startTime])
+  @@index([isActive])
+}
+
+model PomodoroSession {
+  id          Int                  @id @default(autoincrement())
+  userId      Int
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  todoId      Int?
+  todo        Todo?                @relation(fields: [todoId], references: [id], onDelete: SetNull)
+
+  type        PomodoroSessionType  @default(WORK)
+  duration    Int                  // Duration in minutes (25 for work, 5 for short break, 15 for long break)
+
+  startTime   DateTime
+  endTime     DateTime?
+  completed   Boolean              @default(false)
+
+  createdAt   DateTime             @default(now())
+
+  @@index([userId])
+  @@index([todoId])
+  @@index([startTime])
+  @@index([completed])
 }
