@@ -7,6 +7,7 @@ import { checkLimit } from '../middleware/limitEnforcement';
 import { CreateTodoSchema, UpdateTodoSchema, CreateTagSchema } from '../schemas/todoSchemas';
 import authRoutes from './auth';
 import billingRoutes from './billing';
+import recurringTodosRoutes from './recurringTodos';
 
 const router: Router = Router();
 
@@ -15,6 +16,9 @@ router.use('/api/auth', authRoutes);
 
 // Mount billing routes (protected)
 router.use('/api/billing', billingRoutes);
+
+// Mount recurring todos routes (protected + feature gated)
+router.use('/api/recurring-todos', recurringTodosRoutes);
 
 // Public routes
 router.get('/api', (_req: Request, res: Response): void => {
