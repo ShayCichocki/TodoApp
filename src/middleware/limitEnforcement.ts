@@ -2,11 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import { subscriptionService } from '../services/subscriptionService';
 import { prisma } from '../lib/prisma';
 
-export type LimitType = 'todos' | 'tags' | 'collaborators';
+export type LimitType = 'todos' | 'tags' | 'collaborators' | 'workspaces' | 'workspaceMembers';
 
 interface LimitCheckConfig {
   limitType: LimitType;
-  limitKey: 'maxTodos' | 'maxTags' | 'maxCollaborators';
+  limitKey: 'maxTodos' | 'maxTags' | 'maxCollaborators' | 'maxWorkspaces' | 'maxWorkspaceMembers';
   resourceName: string;
 }
 
@@ -25,6 +25,16 @@ const LIMIT_CONFIGS: Record<LimitType, LimitCheckConfig> = {
     limitType: 'collaborators',
     limitKey: 'maxCollaborators',
     resourceName: 'collaborators',
+  },
+  workspaces: {
+    limitType: 'workspaces',
+    limitKey: 'maxWorkspaces',
+    resourceName: 'workspaces',
+  },
+  workspaceMembers: {
+    limitType: 'workspaceMembers',
+    limitKey: 'maxWorkspaceMembers',
+    resourceName: 'workspace members',
   },
 };
 
@@ -47,7 +57,7 @@ export function checkLimit(limitType: LimitType) {
 
     try {
       // Get current count based on resource type
-      const currentCount = await getCurrentCount(userId, limitType);
+      const currentCount = await getCurrentCount(userId, limitType, req);
 
       // Check if user can create more
       const limitCheck = await subscriptionService.canCreateMore(
@@ -88,7 +98,8 @@ export function checkLimit(limitType: LimitType) {
  */
 async function getCurrentCount(
   userId: number,
-  limitType: LimitType
+  limitType: LimitType,
+  req?: Request
 ): Promise<number> {
   switch (limitType) {
     case 'todos':
@@ -119,6 +130,24 @@ async function getCurrentCount(
       // Placeholder for future collaboration feature
       // For now, return 0
       return 0;
+
+    case 'workspaces':
+      return prisma.workspace.count({
+        where: { ownerId: userId },
+      });
+
+    case 'workspaceMembers':
+      // For workspace members, we need the workspaceId from the request params
+      if (!req || !req.params['id']) {
+        return 0;
+      }
+      const workspaceId = parseInt(req.params['id'], 10);
+      if (isNaN(workspaceId)) {
+        return 0;
+      }
+      return prisma.workspaceMember.count({
+        where: { workspaceId },
+      });
 
     default:
       return 0;
