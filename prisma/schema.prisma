@@ -55,6 +55,14 @@ enum PomodoroSessionType {
   LONG_BREAK
 }
 
+enum TemplateVariableType {
+  TEXT
+  NUMBER
+  DATE
+  SELECT
+  BOOLEAN
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -62,14 +70,15 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  todos           Todo[]
-  recurringTodos  RecurringTodo[]
-  subscription    Subscription?
-  paymentMethods  PaymentMethod[]
-  ownedLists      SharedList[]
-  collaborations  Collaborator[]
-  timeEntries     TimeEntry[]
+  todos            Todo[]
+  recurringTodos   RecurringTodo[]
+  subscription     Subscription?
+  paymentMethods   PaymentMethod[]
+  ownedLists       SharedList[]
+  collaborations   Collaborator[]
+  timeEntries      TimeEntry[]
   pomodoroSessions PomodoroSession[]
+  templates        Template[]
 
   @@index([email])
 }
@@ -353,4 +362,78 @@ model PomodoroSession {
   @@index([todoId])
   @@index([startTime])
   @@index([completed])
+}
+
+model Template {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+
+  // Template content
+  title       String
+  content     String  // The template body with {{variable}} placeholders
+  priority    Priority @default(MEDIUM)
+
+  // Ownership
+  userId      Int?     // null for system templates
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Categorization
+  categoryId  Int?
+  category    TemplateCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  isPublic    Boolean  @default(false)  // Public templates available to all users
+  isSystem    Boolean  @default(false)  // System templates (curated)
+
+  // Usage tracking
+  useCount    Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  variables   TemplateVariable[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([isPublic])
+  @@index([isSystem])
+}
+
+model TemplateVariable {
+  id          Int                  @id @default(autoincrement())
+  templateId  Int
+  template    Template             @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  name        String                // Variable name (e.g., "client_name")
+  label       String                // Display label (e.g., "Client Name")
+  type        TemplateVariableType  @default(TEXT)
+
+  defaultValue String?              // Default value if not provided
+  required    Boolean              @default(false)
+
+  // For SELECT type
+  options     String?              // JSON array of options: ["Option 1", "Option 2"]
+
+  // Ordering
+  order       Int                  @default(0)
+
+  createdAt   DateTime             @default(now())
+
+  @@index([templateId])
+}
+
+model TemplateCategory {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+  icon        String?    // Icon name or emoji
+  color       String?    // Hex color
+
+  isSystem    Boolean    @default(false)
+
+  createdAt   DateTime   @default(now())
+
+  templates   Template[]
+
+  @@index([name])
 }

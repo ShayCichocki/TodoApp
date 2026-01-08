@@ -10,6 +10,7 @@ import billingRoutes from './billing';
 import recurringTodosRoutes from './recurringTodos';
 import sharedListsRoutes from './sharedLists';
 import timeTrackingRoutes from './timeTracking';
+import templatesRoutes from './templates';
 
 const router: Router = Router();
 
@@ -27,6 +28,9 @@ router.use('/api/shared-lists', sharedListsRoutes);
 
 // Mount time tracking routes (protected + feature gated)
 router.use('/api/time-tracking', timeTrackingRoutes);
+
+// Mount templates routes (protected + feature gated)
+router.use('/api/templates', templatesRoutes);
 
 // Public routes
 router.get('/api', (_req: Request, res: Response): void => {
