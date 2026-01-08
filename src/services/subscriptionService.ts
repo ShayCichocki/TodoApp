@@ -26,11 +26,14 @@ export type TierLimits = {
   maxTodos: number | null; // null = unlimited
   maxCollaborators: number | null;
   maxTags: number | null;
+  maxWorkspaces: number | null;
+  maxWorkspaceMembers: number | null;
   hasRecurringTasks: boolean;
   hasTimeTracking: boolean;
   hasCalendarIntegration: boolean;
   hasAdvancedNotifications: boolean;
   hasTemplates: boolean;
+  hasWorkspaces: boolean;
   hasAnalytics: boolean;
   hasApiAccess: boolean;
 };
@@ -45,11 +48,14 @@ export const TIER_CONFIG = {
       maxTodos: 50,
       maxCollaborators: 0,
       maxTags: 10,
+      maxWorkspaces: 0,
+      maxWorkspaceMembers: 0,
       hasRecurringTasks: false,
       hasTimeTracking: false,
       hasCalendarIntegration: false,
       hasAdvancedNotifications: false,
       hasTemplates: false,
+      hasWorkspaces: false,
       hasAnalytics: false,
       hasApiAccess: false,
     },
@@ -63,11 +69,14 @@ export const TIER_CONFIG = {
       maxTodos: null, // unlimited
       maxCollaborators: 5,
       maxTags: null,
+      maxWorkspaces: 1,
+      maxWorkspaceMembers: 5,
       hasRecurringTasks: true,
       hasTimeTracking: true,
       hasCalendarIntegration: true,
       hasAdvancedNotifications: true,
       hasTemplates: true,
+      hasWorkspaces: true,
       hasAnalytics: true,
       hasApiAccess: false,
     },
@@ -81,11 +90,14 @@ export const TIER_CONFIG = {
       maxTodos: null,
       maxCollaborators: null, // unlimited
       maxTags: null,
+      maxWorkspaces: null, // unlimited
+      maxWorkspaceMembers: null, // unlimited
       hasRecurringTasks: true,
       hasTimeTracking: true,
       hasCalendarIntegration: true,
       hasAdvancedNotifications: true,
       hasTemplates: true,
+      hasWorkspaces: true,
       hasAnalytics: true,
       hasApiAccess: true,
     },
@@ -226,11 +238,11 @@ class SubscriptionService {
   }
 
   /**
-   * Check if user can create more items (todos, tags, etc.)
+   * Check if user can create more items (todos, tags, workspaces, etc.)
    */
   async canCreateMore(
     userId: number,
-    limitType: 'maxTodos' | 'maxCollaborators' | 'maxTags',
+    limitType: 'maxTodos' | 'maxCollaborators' | 'maxTags' | 'maxWorkspaces' | 'maxWorkspaceMembers',
     currentCount: number
   ): Promise<{
     allowed: boolean;
