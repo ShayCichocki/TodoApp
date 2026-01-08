@@ -12,6 +12,7 @@ import sharedListsRoutes from './sharedLists';
 import timeTrackingRoutes from './timeTracking';
 import templatesRoutes from './templates';
 import notificationsRoutes from './notifications';
+import calendarRoutes from './calendar';
 
 const router: Router = Router();
 
@@ -35,6 +36,9 @@ router.use('/api/templates', templatesRoutes);
 
 // Mount notifications routes (protected + feature gated)
 router.use('/api/notifications', notificationsRoutes);
+
+// Mount calendar routes (protected + feature gated)
+router.use('/api/calendar', calendarRoutes);
 
 // Public routes
 router.get('/api', (_req: Request, res: Response): void => {
