@@ -9,6 +9,8 @@ import { Pricing } from './pages/Pricing';
 import { NotFound } from './pages/NotFound';
 import { RootPage } from './pages/RootPage';
 import CalendarIntegration from './pages/CalendarIntegration';
+import Workspaces from './pages/Workspaces';
+import WorkspaceDashboard from './pages/WorkspaceDashboard';
 
 function App(): JSX.Element {
   return (
@@ -51,6 +53,26 @@ function App(): JSX.Element {
             <Layout>
               <ProtectedRoute>
                 <CalendarIntegration />
+              </ProtectedRoute>
+            </Layout>
+          }
+        />
+        <Route
+          path="/workspaces"
+          element={
+            <Layout>
+              <ProtectedRoute>
+                <Workspaces />
+              </ProtectedRoute>
+            </Layout>
+          }
+        />
+        <Route
+          path="/workspaces/:id"
+          element={
+            <Layout>
+              <ProtectedRoute>
+                <WorkspaceDashboard />
               </ProtectedRoute>
             </Layout>
           }
