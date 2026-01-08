@@ -63,6 +63,35 @@ enum TemplateVariableType {
   BOOLEAN
 }
 
+enum NotificationType {
+  TASK_DUE_SOON
+  TASK_OVERDUE
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  DIGEST_DAILY
+  DIGEST_WEEKLY
+  REMINDER
+}
+
+enum NotificationChannel {
+  EMAIL
+  BROWSER_PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+enum DigestFrequency {
+  DAILY
+  WEEKLY
+  NEVER
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -70,15 +99,17 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  todos            Todo[]
-  recurringTodos   RecurringTodo[]
-  subscription     Subscription?
-  paymentMethods   PaymentMethod[]
-  ownedLists       SharedList[]
-  collaborations   Collaborator[]
-  timeEntries      TimeEntry[]
-  pomodoroSessions PomodoroSession[]
-  templates        Template[]
+  todos                 Todo[]
+  recurringTodos        RecurringTodo[]
+  subscription          Subscription?
+  paymentMethods        PaymentMethod[]
+  ownedLists            SharedList[]
+  collaborations        Collaborator[]
+  timeEntries           TimeEntry[]
+  pomodoroSessions      PomodoroSession[]
+  templates             Template[]
+  notifications         Notification[]
+  notificationSettings  NotificationSettings?
 
   @@index([email])
 }
@@ -436,4 +467,106 @@ model TemplateCategory {
   templates   Template[]
 
   @@index([name])
+}
+
+model Notification {
+  id          Int                 @id @default(autoincrement())
+  userId      Int
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        NotificationType
+  channel     NotificationChannel
+  status      NotificationStatus  @default(PENDING)
+
+  // Content
+  title       String
+  message     String
+  actionUrl   String?             // Deep link to relevant todo/list
+
+  // Related entity (optional)
+  todoId      Int?
+  listId      Int?
+
+  // Delivery tracking
+  sentAt      DateTime?
+  readAt      DateTime?
+  failedAt    DateTime?
+  errorMessage String?
+
+  // Scheduling
+  scheduledFor DateTime?          // For delayed notifications
+  snoozedUntil DateTime?          // For snoozed notifications
+
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([scheduledFor])
+  @@index([snoozedUntil])
+}
+
+model NotificationSettings {
+  id                    Int              @id @default(autoincrement())
+  userId                Int              @unique
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Channel preferences
+  emailEnabled          Boolean          @default(true)
+  browserPushEnabled    Boolean          @default(true)
+  inAppEnabled          Boolean          @default(true)
+
+  // Notification type preferences
+  taskDueSoonEnabled    Boolean          @default(true)
+  taskDueSoonHours      Int              @default(24)  // How many hours before due date
+  taskOverdueEnabled    Boolean          @default(true)
+  taskAssignedEnabled   Boolean          @default(true)
+  taskCompletedEnabled  Boolean          @default(false)
+
+  // Digest preferences
+  digestFrequency       DigestFrequency  @default(DAILY)
+  digestTime            String           @default("09:00")  // HH:mm format
+  digestDaysOfWeek      String?          // For WEEKLY: JSON array ["MON", "FRI"]
+
+  // Quiet hours
+  quietHoursEnabled     Boolean          @default(false)
+  quietHoursStart       String?          // HH:mm format
+  quietHoursEnd         String?          // HH:mm format
+
+  // List/tag-specific overrides (future enhancement)
+  mutedListIds          String?          // JSON array of list IDs
+  mutedTagIds           String?          // JSON array of tag IDs
+
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@index([userId])
+}
+
+model NotificationRule {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+
+  // Trigger conditions
+  triggerType String   // 'due_soon', 'overdue', 'tag_match', 'priority_match', 'custom'
+  conditions  String   // JSON object with rule conditions
+
+  // Action
+  channel     NotificationChannel
+  message     String   // Template string with variables
+
+  // Frequency control
+  maxPerDay   Int?     // Limit notifications per day
+  lastSent    DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isActive])
 }
