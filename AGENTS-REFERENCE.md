@@ -452,10 +452,6 @@ When completing work on a bead branch:
 1. ✅ Commit all changes with descriptive messages
 2. ✅ Push commits to the remote feature branch
 3. ✅ Close the bead issue with `bd close [issue-id] -r "reason"`
-4. ✅ Open a pull request with `gh pr create`
-5. ✅ Monitor PR checks with `gh pr checks` and ensure they pass
-6. ✅ If checks fail, fix the issues and push additional commits
-7. ✅ Once all checks pass, ask the user to review the PR
 8. ✅ Leave the branch for review (do NOT merge to main yourself)
 
 **DO NOT automatically merge to main unless in greenfield mode (see below).**
@@ -482,13 +478,7 @@ When creating or working with pull requests:
 - If checks fail, fix the issues and push additional commits to the feature branch
 - Use `gh pr checks` to monitor the status of PR checks
 - **NEVER squash commits** - preserve git history by keeping all commits intact
-- Use regular merge (not squash merge or rebase merge) to maintain full commit history
-- After PR is merged, delete the feature branch both locally and remotely:
-  ```bash
-  git branch -d [issue-id]
-  git push origin --delete [issue-id]
-  ```
-
+- **NEVER MERGE PRS**
 ---
 
 ## Rule 4: User Review Before Execution

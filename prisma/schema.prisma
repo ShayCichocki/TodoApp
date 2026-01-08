@@ -110,6 +110,25 @@ enum SyncStatus {
   ERROR
 }
 
+enum WorkspaceMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum ActivityAction {
+  CREATED
+  UPDATED
+  DELETED
+  COMPLETED
+  ASSIGNED
+  COMMENTED
+  MEMBER_ADDED
+  MEMBER_REMOVED
+  MEMBER_ROLE_CHANGED
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -129,6 +148,12 @@ model User {
   notifications         Notification[]
   notificationSettings  NotificationSettings?
   calendarConnections   CalendarConnection[]
+  ownedWorkspaces       Workspace[]
+  workspaceMemberships  WorkspaceMember[]
+  createdWorkspaceLists WorkspaceList[]
+  activities            ActivityFeedItem[]
+  comments              Comment[]
+  assignedTodos         Todo[]            @relation("AssignedTodos")
 
   @@index([email])
 }
@@ -153,6 +178,16 @@ model Todo {
   recurringTodo    RecurringTodo? @relation(fields: [recurringTodoId], references: [id], onDelete: SetNull)
   recurringDate    DateTime?      // The specific date this instance represents
 
+  // Workspace relation (null if personal todo)
+  workspaceId      Int?
+  workspace        Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  workspaceListId  Int?
+  workspaceList    WorkspaceList? @relation(fields: [workspaceListId], references: [id], onDelete: Cascade)
+
+  assignedToId     Int?
+  assignedTo       User? @relation("AssignedTodos", fields: [assignedToId], references: [id], onDelete: SetNull)
+
   deletedAt   DateTime?
 
   createdAt   DateTime  @default(now())
@@ -162,6 +197,7 @@ model Todo {
   timeEntries      TimeEntry[]
   pomodoroSessions PomodoroSession[]
   calendarEvents   CalendarEvent[]
+  comments         Comment[]
 
   @@index([dueDate])
   @@index([isComplete])
@@ -170,6 +206,9 @@ model Todo {
   @@index([userId])
   @@index([listId])
   @@index([recurringTodoId])
+  @@index([workspaceId])
+  @@index([workspaceListId])
+  @@index([assignedToId])
 }
 
 model Tag {
@@ -660,4 +699,109 @@ model CalendarEvent {
   @@index([connectionId])
   @@index([todoId])
   @@index([startTime])
+}
+
+model Workspace {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+
+  ownerId     Int
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  settings    String?  // JSON for workspace preferences
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     WorkspaceMember[]
+  todos       Todo[]
+  lists       WorkspaceList[]
+  activities  ActivityFeedItem[]
+  comments    Comment[]
+
+  @@index([ownerId])
+}
+
+model WorkspaceMember {
+  id          Int      @id @default(autoincrement())
+  workspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role        WorkspaceMemberRole @default(MEMBER)
+
+  invitedAt   DateTime @default(now())
+  joinedAt    DateTime?
+  invitedBy   Int?     // userId who sent invite
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model WorkspaceList {
+  id          Int      @id @default(autoincrement())
+  workspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  color       String?
+
+  createdById Int
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  todos       Todo[]
+
+  @@index([workspaceId])
+  @@index([createdById])
+}
+
+model ActivityFeedItem {
+  id          Int      @id @default(autoincrement())
+  workspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  actorId     Int
+  actor       User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  action      ActivityAction
+  entityType  String   // 'todo', 'list', 'member', etc.
+  entityId    Int?
+
+  metadata    String?  // JSON with action details
+
+  createdAt   DateTime @default(now())
+
+  @@index([workspaceId])
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id          Int      @id @default(autoincrement())
+  workspaceId Int
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  todoId      Int
+  todo        Todo     @relation(fields: [todoId], references: [id], onDelete: Cascade)
+
+  authorId    Int
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  content     String
+  mentions    String?  // JSON array of mentioned userIds
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([todoId])
+  @@index([workspaceId])
+  @@index([authorId])
 }

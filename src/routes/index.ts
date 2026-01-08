@@ -17,6 +17,7 @@ import timeTrackingRoutes from './timeTracking';
 import templatesRoutes from './templates';
 import notificationsRoutes from './notifications';
 import calendarRoutes from './calendar';
+import workspacesRoutes from './workspaces';
 
 const router: Router = Router();
 
@@ -43,6 +44,9 @@ router.use('/api/notifications', notificationsRoutes);
 
 // Mount calendar routes (protected + feature gated)
 router.use('/api/calendar', calendarRoutes);
+
+// Mount workspaces routes (protected + feature gated)
+router.use('/api/workspaces', workspacesRoutes);
 
 // Public routes
 router.get('/api', (_req: Request, res: Response): void => {
