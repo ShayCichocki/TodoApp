@@ -43,6 +43,12 @@ enum RecurrenceEndType {
   AFTER_COUNT
 }
 
+enum CollaboratorRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -54,6 +60,8 @@ model User {
   recurringTodos RecurringTodo[]
   subscription   Subscription?
   paymentMethods PaymentMethod[]
+  ownedLists     SharedList[]
+  collaborations Collaborator[]
 
   @@index([email])
 }
@@ -68,6 +76,10 @@ model Todo {
 
   userId      Int
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Shared list relation (null if personal todo)
+  listId      Int?
+  list        SharedList? @relation(fields: [listId], references: [id], onDelete: Cascade)
 
   // Recurring todo relation (null if not a recurring instance)
   recurringTodoId  Int?
@@ -86,6 +98,7 @@ model Todo {
   @@index([priority])
   @@index([deletedAt])
   @@index([userId])
+  @@index([listId])
   @@index([recurringTodoId])
 }
 
@@ -244,4 +257,43 @@ model RecurrenceException {
   @@index([recurringTodoId])
   @@index([originalDate])
   @@unique([recurringTodoId, originalDate])
+}
+
+model SharedList {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  color       String?  // Hex color for UI
+
+  ownerId     Int
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  isPublic    Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  todos        Todo[]
+  collaborators Collaborator[]
+
+  @@index([ownerId])
+  @@index([isPublic])
+}
+
+model Collaborator {
+  id          Int              @id @default(autoincrement())
+  listId      Int
+  list        SharedList       @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  userId      Int
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role        CollaboratorRole @default(VIEWER)
+
+  invitedAt   DateTime         @default(now())
+  acceptedAt  DateTime?
+
+  @@unique([listId, userId])
+  @@index([listId])
+  @@index([userId])
 }

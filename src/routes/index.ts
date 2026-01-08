@@ -8,6 +8,7 @@ import { CreateTodoSchema, UpdateTodoSchema, CreateTagSchema } from '../schemas/
 import authRoutes from './auth';
 import billingRoutes from './billing';
 import recurringTodosRoutes from './recurringTodos';
+import sharedListsRoutes from './sharedLists';
 
 const router: Router = Router();
 
@@ -19,6 +20,9 @@ router.use('/api/billing', billingRoutes);
 
 // Mount recurring todos routes (protected + feature gated)
 router.use('/api/recurring-todos', recurringTodosRoutes);
+
+// Mount shared lists routes (protected)
+router.use('/api/shared-lists', sharedListsRoutes);
 
 // Public routes
 router.get('/api', (_req: Request, res: Response): void => {
